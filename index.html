@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixel Chess</title>
+    <meta
+      name="description"
+      content="Open source pixel-art chess game made with HTML5, CSS, and JavaScript."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Open Source Learning Project</p>
+          <h1>Pixel Chess</h1>
+        </div>
+        <button id="new-game" class="primary-button" type="button">New Game</button>
+      </header>
+
+      <section class="hud" aria-label="Game status panels">
+        <div class="status-panel">
+          <span class="label">Turn</span>
+          <strong id="turn-indicator">White</strong>
+        </div>
+
+        <div class="status-panel wide">
+          <span class="label">Status</span>
+          <strong id="status-text">White to move</strong>
+        </div>
+      </section>
+
+      <main>
+        <div id="board" class="board" aria-label="Chess board"></div>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
