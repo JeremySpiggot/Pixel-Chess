@@ -6,35 +6,49 @@
     <title>Pixel Chess</title>
     <meta
       name="description"
-      content="A small open source pixel-art chess game built with HTML5, CSS, and JavaScript."
+      content="A playable retro pixel-art chess game built with HTML5, CSS, and JavaScript."
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Open Source</p>
-          <h1>Pixel Chess</h1>
+      <div class="board-panel">
+        <div class="board-wrapper">
+          <div id="board" class="board" aria-label="Chess board"></div>
         </div>
-        <button id="new-game" type="button">New Game</button>
-      </header>
+      </div>
 
-      <section class="hud" aria-label="Game status">
-        <div class="status-panel">
+      <aside class="sidebar" aria-label="Game information panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Open Source</p>
+            <h1>Pixel Chess</h1>
+          </div>
+          <button id="new-game" type="button">New Game</button>
+        </header>
+
+        <div class="status-card">
           <span class="label">Turn</span>
           <strong id="turn-indicator">White</strong>
         </div>
 
-        <div class="status-panel wide">
+        <div class="status-card">
           <span class="label">Status</span>
           <strong id="status-text">White to move</strong>
         </div>
-      </section>
 
-      <main class="board-wrap">
-        <div id="board" class="board" aria-label="Chess board"></div>
-      </main>
+        <div class="history-card">
+          <div class="history-header">
+            <h2>Move History</h2>
+          </div>
+          <div class="history-grid">
+            <span>#</span>
+            <span>White</span>
+            <span>Black</span>
+          </div>
+          <div id="move-history" class="move-history" aria-live="polite"></div>
+        </div>
+      </aside>
     </div>
 
     <script src="script.js"></script>
