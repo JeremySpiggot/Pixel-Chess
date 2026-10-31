@@ -1,0 +1,35 @@
+# Pixel Chess
+
+A simple open-source chess game built with HTML, CSS, and JavaScript.
+
+Features:
+- full 8x8 board
+- playable local chess turns
+- move history panel
+- pixel-art chess pieces
+- responsive layout for desktop and mobile
+- no dependencies or build step required
+
+How to run:
+1. Open `index.html` directly in a browser, or
+2. From the project folder run:
+
+   python -m http.server 8000
+
+3. Visit `http://localhost:8000`
+
+Project files:
+- `index.html` — page markup
+- `styles.css` — board, layout, and pixel-art styling
+- `script.js` — chess rules and board interactions
+- `assets/` — optional artwork and resources
+
+This project is intended as a learning-friendly chess game and can be expanded with features like:
+- castling and en passant
+- AI opponent
+- sound effects
+- move evaluation
+- online multiplayer
+
+License:
+This project is open source and free to modify for learning and personal use.
