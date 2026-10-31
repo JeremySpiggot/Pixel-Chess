@@ -6,7 +6,7 @@
     <title>Pixel Chess</title>
     <meta
       name="description"
-      content="Open source pixel-art chess game made with HTML5, CSS, and JavaScript."
+      content="A small open source pixel-art chess game built with HTML5, CSS, and JavaScript."
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -14,13 +14,13 @@
     <div class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Open Source Learning Project</p>
+          <p class="eyebrow">Open Source</p>
           <h1>Pixel Chess</h1>
         </div>
-        <button id="new-game" class="primary-button" type="button">New Game</button>
+        <button id="new-game" type="button">New Game</button>
       </header>
 
-      <section class="hud" aria-label="Game status panels">
+      <section class="hud" aria-label="Game status">
         <div class="status-panel">
           <span class="label">Turn</span>
           <strong id="turn-indicator">White</strong>
@@ -32,7 +32,7 @@
         </div>
       </section>
 
-      <main>
+      <main class="board-wrap">
         <div id="board" class="board" aria-label="Chess board"></div>
       </main>
     </div>

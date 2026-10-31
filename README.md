@@ -1,47 +1,39 @@
 # Pixel-Chess
 
-A small, browser-based chess game built with HTML, CSS, and JavaScript.
+A small open-source chess game made with HTML, CSS, and JavaScript.
 
 Features:
-- Pixel-art chess pieces rendered from an SVG sprite sheet
-- Sound effects generated in-browser with Web Audio
-- Legal move validation
-- Turn management
-- Check, checkmate, and stalemate detection
-- Castling, en passant, and pawn promotion
-- Lightweight open-source structure for learning
+- pixel-art chess pieces
+- playable local two-player chess
+- UI status and turn tracking
+- castling, en passant, and promotion rules
+- Web Audio sound effects
+- browser-ready single-page build
 
 ## Run locally
 
-1. Open the project folder in a browser, or serve it locally with a simple static server.
-2. Open `index.html` directly in a browser.
-
-Example using Python:
+Open the repo in a browser, or serve it locally:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit:
+Then open:
 
 ```text
 http://localhost:8000
 ```
 
-## File overview
+## Files
 
-- `index.html` – game shell and layout
-- `styles.css` – pixel-art board styling and UI
-- `script.js` – chess logic, interaction, and sound effects
-- `assets/chess-sprites.svg` – sprite sheet for all chess pieces
+- `index.html` – page layout
+- `styles.css` – game styling and responsive sizing
+- `script.js` – gameplay logic and sound effects
+- `assets/` – any sprite or visual asset files
 
-## Learning goals
+## Learning goal
 
-This project is designed as a teaching tool:
-- learn board representation and move generation
-- understand legal-move checking
-- see how turn state and special rules work
-- practice building a small game loop in plain JavaScript
+This project is meant to be a simple teaching example for chess logic and browser game development.
 
 ## License
 

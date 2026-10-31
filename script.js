@@ -1,10 +1,77 @@
+const BOARD_SIZE = 8;
+const PIECE_PATTERNS = {
+  p: [
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 1, 1, 0, 0, 0]
+  ],
+  n: [
+    [0, 0, 0, 1, 1, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0]
+  ],
+  b: [
+    [0, 0, 0, 1, 1, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0]
+  ],
+  r: [
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1]
+  ],
+  q: [
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0]
+  ],
+  k: [
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0]
+  ]
+};
+
+const PIECE_COLORS = {
+  w: "#f4efe6",
+  b: "#1d2734"
+};
+
 const boardElement = document.getElementById("board");
 const turnIndicator = document.getElementById("turn-indicator");
 const statusText = document.getElementById("status-text");
 const newGameButton = document.getElementById("new-game");
 
-const BOARD_SIZE = 8;
-const PIECE_ORDER = ["p", "n", "b", "r", "q", "k"];
 let game = null;
 let audioContext = null;
 
@@ -17,50 +84,62 @@ function initializeAudio() {
   }
 }
 
-function playTone({ frequency = 440, duration = 0.08, type = "square", volume = 0.06, slide = 0 }) {
+function playTone({ frequency = 440, duration = 0.08, type = "triangle", volume = 0.05, slide = 0 }) {
   if (!audioContext) return;
 
-  const now = audioContext.currentTime;
-  const oscillator = audioContext.createOscillator();
+  const start = audioContext.currentTime;
+  const osc = audioContext.createOscillator();
   const gain = audioContext.createGain();
 
-  oscillator.type = type;
-  oscillator.frequency.setValueAtTime(frequency, now);
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, start);
   if (slide) {
-    oscillator.frequency.linearRampToValueAtTime(frequency + slide, now + duration);
+    osc.frequency.linearRampToValueAtTime(frequency + slide, start + duration);
   }
 
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
 
-  oscillator.connect(gain);
+  osc.connect(gain);
   gain.connect(audioContext.destination);
 
-  oscillator.start(now);
-  oscillator.stop(now + duration);
+  osc.start(start);
+  osc.stop(start + duration);
 }
 
 function playMoveSound() {
   initializeAudio();
-  playTone({ frequency: 230, duration: 0.06, type: "triangle", volume: 0.04, slide: 30 });
+  playTone({ frequency: 220, duration: 0.06, type: "triangle", volume: 0.04, slide: 25 });
 }
 
 function playCaptureSound() {
   initializeAudio();
-  playTone({ frequency: 190, duration: 0.1, type: "sawtooth", volume: 0.05, slide: 80 });
+  playTone({ frequency: 170, duration: 0.1, type: "sawtooth", volume: 0.05, slide: 80 });
 }
 
 function playCheckSound() {
   initializeAudio();
-  playTone({ frequency: 180, duration: 0.12, type: "square", volume: 0.06, slide: 140 });
-  setTimeout(() => playTone({ frequency: 140, duration: 0.18, type: "square", volume: 0.05, slide: 120 }), 90);
+  playTone({ frequency: 200, duration: 0.12, type: "square", volume: 0.05, slide: 110 });
+  setTimeout(() => playTone({ frequency: 150, duration: 0.18, type: "square", volume: 0.04, slide: 90 }), 80);
 }
 
 function playWinSound() {
   initializeAudio();
-  playTone({ frequency: 420, duration: 0.12, type: "triangle", volume: 0.05, slide: 80 });
-  setTimeout(() => playTone({ frequency: 560, duration: 0.18, type: "triangle", volume: 0.05, slide: 120 }), 120);
+  playTone({ frequency: 440, duration: 0.12, type: "triangle", volume: 0.05, slide: 70 });
+  setTimeout(() => playTone({ frequency: 620, duration: 0.18, type: "triangle", volume: 0.05, slide: 80 }), 100);
+}
+
+function colorName(color) {
+  return color === "w" ? "White" : "Black";
+}
+
+function opponent(color) {
+  return color === "w" ? "b" : "w";
+}
+
+function inBounds(row, col) {
+  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
 }
 
 function createInitialBoard() {
@@ -76,116 +155,7 @@ function createInitialBoard() {
   ];
 }
 
-function colorName(color) {
-  return color === "w" ? "White" : "Black";
-}
-
-function opponent(color) {
-  return color === "w" ? "b" : "w";
-}
-
-function inBounds(row, col) {
-  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
-}
-
-function cloneBoard(board) {
-  return board.map((row) => [...row]);
-}
-
-function getPieceColor(piece) {
-  return piece ? piece[0] : null;
-}
-
-function getPieceType(piece) {
-  return piece ? piece[1] : null;
-}
-
-function getKingPosition(board, color) {
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      if (board[row][col] === `${color}k`) {
-        return { row, col };
-      }
-    }
-  }
-  return null;
-}
-
-function isSquareUnderAttack(board, targetRow, targetCol, byColor) {
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      const piece = board[row][col];
-      if (!piece || piece[0] !== byColor) continue;
-
-      if (canPieceAttackSquare(board, row, col, piece, targetRow, targetCol)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-function canPieceAttackSquare(board, fromRow, fromCol, piece, targetRow, targetCol) {
-  const type = getPieceType(piece);
-  const color = getPieceColor(piece);
-
-  if (!piece) return false;
-
-  if (type === "p") {
-    const direction = color === "w" ? -1 : 1;
-    return targetRow === fromRow + direction && Math.abs(targetCol - fromCol) === 1;
-  }
-
-  if (type === "n") {
-    const rowDiff = Math.abs(fromRow - targetRow);
-    const colDiff = Math.abs(fromCol - targetCol);
-    return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
-  }
-
-  if (type === "k") {
-    return Math.abs(fromRow - targetRow) <= 1 && Math.abs(fromCol - targetCol) <= 1;
-  }
-
-  const directions = [];
-  if (type === "b" || type === "q") {
-    directions.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
-  }
-  if (type === "r" || type === "q") {
-    directions.push([1, 0], [-1, 0], [0, 1], [0, -1]);
-  }
-
-  for (const [dr, dc] of directions) {
-    let r = fromRow + dr;
-    let c = fromCol + dc;
-
-    while (inBounds(r, c)) {
-      if (r === targetRow && c === targetCol) return true;
-      if (board[r][c]) break;
-      r += dr;
-      c += dc;
-    }
-  }
-
-  return false;
-}
-
-function isKingInCheck(board, color) {
-  const kingPos = getKingPosition(board, color);
-  if (!kingPos) return false;
-  return isSquareUnderAttack(board, kingPos.row, kingPos.col, opponent(color));
-}
-
-function getPieceIconMarkup(pieceCode) {
-  const pieceName = pieceCode.toLowerCase();
-  return `
-    <svg class="piece-icon" viewBox="0 0 16 16" aria-label="${pieceName}" role="img">
-      <use href="assets/chess-sprites.svg#${pieceName}" xlink:href="assets/chess-sprites.svg#${pieceName}"></use>
-    </svg>
-  `;
-}
-
-function createGameState() {
+function makeGameState() {
   return {
     board: createInitialBoard(),
     turn: "w",
@@ -201,8 +171,115 @@ function createGameState() {
 }
 
 function startNewGame() {
-  game = createGameState();
+  game = makeGameState();
   render();
+}
+
+function getPieceColor(pieceCode) {
+  return pieceCode ? pieceCode[0] : null;
+}
+
+function getPieceType(pieceCode) {
+  return pieceCode ? pieceCode[1] : null;
+}
+
+function buildPixelPieceSVG(pieceCode) {
+  const type = getPieceType(pieceCode);
+  const color = getPieceColor(pieceCode);
+  const fill = PIECE_COLORS[color];
+  const stroke = color === "w" ? "#d9d3c9" : "#435061";
+  const pattern = PIECE_PATTERNS[type];
+
+  let svg = `<svg class="piece-svg" viewBox="0 0 8 8" aria-label="${pieceCode}" role="img">`;
+
+  for (let y = 0; y < pattern.length; y += 1) {
+    for (let x = 0; x < pattern[y].length; x += 1) {
+      if (pattern[y][x] === 1) {
+        svg += `<rect x="${x}" y="${y}" width="1" height="1" fill="${fill}" stroke="${stroke}" stroke-width="0.05" />`;
+      }
+    }
+  }
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function getKingPosition(board, color) {
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let col = 0; col < BOARD_SIZE; col += 1) {
+      if (board[row][col] === `${color}k`) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+}
+
+function canPieceAttackSquare(board, fromRow, fromCol, piece, targetRow, targetCol) {
+  const type = getPieceType(piece);
+  const color = getPieceColor(piece);
+
+  if (!piece) return false;
+
+  if (type === "p") {
+    const direction = color === "w" ? -1 : 1;
+    return targetRow === fromRow + direction && Math.abs(targetCol - fromCol) === 1;
+  }
+
+  if (type === "n") {
+    const r = Math.abs(fromRow - targetRow);
+    const c = Math.abs(fromCol - targetCol);
+    return (r === 2 && c === 1) || (r === 1 && c === 2);
+  }
+
+  if (type === "k") {
+    return Math.abs(fromRow - targetRow) <= 1 && Math.abs(fromCol - targetCol) <= 1;
+  }
+
+  const directions = [];
+  if (type === "b" || type === "q") {
+    directions.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
+  }
+  if (type === "r" || type === "q") {
+    directions.push([1, 0], [-1, 0], [0, 1], [0, -1]);
+  }
+
+  for (const [dr, dc] of directions) {
+    let row = fromRow + dr;
+    let col = fromCol + dc;
+
+    while (inBounds(row, col)) {
+      if (row === targetRow && col === targetCol) return true;
+      if (board[row][col]) break;
+      row += dr;
+      col += dc;
+    }
+  }
+
+  return false;
+}
+
+function isSquareUnderAttack(board, row, col, byColor) {
+  for (let r = 0; r < BOARD_SIZE; r += 1) {
+    for (let c = 0; c < BOARD_SIZE; c += 1) {
+      const piece = board[r][c];
+      if (!piece || piece[0] !== byColor) continue;
+      if (canPieceAttackSquare(board, r, c, piece, row, col)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function isKingInCheck(board, color) {
+  const king = getKingPosition(board, color);
+  if (!king) return false;
+  return isSquareUnderAttack(board, king.row, king.col, opponent(color));
+}
+
+function cloneBoard(board) {
+  return board.map((row) => [...row]);
 }
 
 function simulateMove(board, move) {
@@ -225,33 +302,11 @@ function simulateMove(board, move) {
     }
   }
 
-  const finalPiece = move.promotion ? `${movingPiece[0]}${move.promotion}` : movingPiece;
-  nextBoard[move.to.row][move.to.col] = finalPiece;
+  nextBoard[move.to.row][move.to.col] = move.promotion
+    ? `${movingPiece[0]}${move.promotion}`
+    : movingPiece;
 
   return nextBoard;
-}
-
-function updateCastlingRights(move, movingPiece, capturedPiece) {
-  const color = movingPiece[0];
-
-  if (movingPiece[1] === "k") {
-    game.castling[color].k = false;
-    game.castling[color].q = false;
-  }
-
-  if (movingPiece[1] === "r") {
-    if (move.from.row === 7 && move.from.col === 0) game.castling.w.q = false;
-    if (move.from.row === 7 && move.from.col === 7) game.castling.w.k = false;
-    if (move.from.row === 0 && move.from.col === 0) game.castling.b.q = false;
-    if (move.from.row === 0 && move.from.col === 7) game.castling.b.k = false;
-  }
-
-  if (capturedPiece && capturedPiece[1] === "r") {
-    if (move.to.row === 7 && move.to.col === 0) game.castling.w.q = false;
-    if (move.to.row === 7 && move.to.col === 7) game.castling.w.k = false;
-    if (move.to.row === 0 && move.to.col === 0) game.castling.b.q = false;
-    if (move.to.row === 0 && move.to.col === 7) game.castling.b.k = false;
-  }
 }
 
 function generatePseudoMovesForPiece(board, row, col, piece) {
@@ -259,13 +314,12 @@ function generatePseudoMovesForPiece(board, row, col, piece) {
   const color = getPieceColor(piece);
   const moves = [];
 
-  const addMove = (targetRow, targetCol, special = null, promotion = null) => {
-    const captured = board[targetRow][targetCol] || null;
+  const addMove = (toRow, toCol, special = null, promotion = null) => {
     moves.push({
       from: { row, col },
-      to: { row: targetRow, col: targetCol },
+      to: { row: toRow, col: toCol },
       piece,
-      captured,
+      captured: board[toRow][toCol] || null,
       special,
       promotion
     });
@@ -299,8 +353,8 @@ function generatePseudoMovesForPiece(board, row, col, piece) {
 
       if (!inBounds(targetRow, targetCol)) continue;
 
-      const targetPiece = board[targetRow][targetCol];
-      if (targetPiece && targetPiece[0] !== color) {
+      const target = board[targetRow][targetCol];
+      if (target && target[0] !== color) {
         if (targetRow === promotionRow) {
           addMove(targetRow, targetCol, "promotion", "q");
           addMove(targetRow, targetCol, "promotion", "r");
@@ -312,8 +366,7 @@ function generatePseudoMovesForPiece(board, row, col, piece) {
       }
 
       if (game.enPassant && game.enPassant.row === targetRow && game.enPassant.col === targetCol) {
-        const capturedTarget = board[row][targetCol];
-        if (capturedTarget === `${opponent(color)}p`) {
+        if (board[row][targetCol] === `${opponent(color)}p`) {
           addMove(targetRow, targetCol, "enPassant");
         }
       }
@@ -327,45 +380,38 @@ function generatePseudoMovesForPiece(board, row, col, piece) {
     ];
 
     for (const [dr, dc] of offsets) {
-      const nextRow = row + dr;
-      const nextCol = col + dc;
+      const r = row + dr;
+      const c = col + dc;
+      if (!inBounds(r, c)) continue;
 
-      if (!inBounds(nextRow, nextCol)) continue;
-
-      const targetPiece = board[nextRow][nextCol];
-      if (!targetPiece || targetPiece[0] !== color) {
-        addMove(nextRow, nextCol, targetPiece ? "capture" : null);
+      const target = board[r][c];
+      if (!target || target[0] !== color) {
+        addMove(r, c, target ? "capture" : null);
       }
     }
   }
 
   if (type === "b" || type === "r" || type === "q") {
     const directions = [];
-    if (type === "b" || type === "q") {
-      directions.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
-    }
-    if (type === "r" || type === "q") {
-      directions.push([1, 0], [-1, 0], [0, 1], [0, -1]);
-    }
+    if (type === "b" || type === "q") directions.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
+    if (type === "r" || type === "q") directions.push([1, 0], [-1, 0], [0, 1], [0, -1]);
 
     for (const [dr, dc] of directions) {
-      let nextRow = row + dr;
-      let nextCol = col + dc;
+      let r = row + dr;
+      let c = col + dc;
 
-      while (inBounds(nextRow, nextCol)) {
-        const targetPiece = board[nextRow][nextCol];
-
-        if (!targetPiece) {
-          addMove(nextRow, nextCol);
+      while (inBounds(r, c)) {
+        const target = board[r][c];
+        if (!target) {
+          addMove(r, c);
         } else {
-          if (targetPiece[0] !== color) {
-            addMove(nextRow, nextCol, "capture");
+          if (target[0] !== color) {
+            addMove(r, c, "capture");
           }
           break;
         }
-
-        nextRow += dr;
-        nextCol += dc;
+        r += dr;
+        c += dc;
       }
     }
   }
@@ -374,30 +420,24 @@ function generatePseudoMovesForPiece(board, row, col, piece) {
     for (let dr = -1; dr <= 1; dr += 1) {
       for (let dc = -1; dc <= 1; dc += 1) {
         if (dr === 0 && dc === 0) continue;
-        const nextRow = row + dr;
-        const nextCol = col + dc;
+        const r = row + dr;
+        const c = col + dc;
+        if (!inBounds(r, c)) continue;
 
-        if (!inBounds(nextRow, nextCol)) continue;
-
-        const targetPiece = board[nextRow][nextCol];
-        if (!targetPiece || targetPiece[0] !== color) {
-          addMove(nextRow, nextCol, targetPiece ? "capture" : null);
+        const target = board[r][c];
+        if (!target || target[0] !== color) {
+          addMove(r, c, target ? "capture" : null);
         }
       }
     }
 
     const homeRow = color === "w" ? 7 : 0;
     if (row === homeRow && col === 4) {
-      if (game.castling[color].k && board[homeRow][5] === null && board[homeRow][6] === null) {
-        if (board[homeRow][7] === `${color}r`) {
-          addMove(homeRow, 6, "castle");
-        }
+      if (game.castling[color].k && board[homeRow][5] === null && board[homeRow][6] === null && board[homeRow][7] === `${color}r`) {
+        addMove(homeRow, 6, "castle");
       }
-
-      if (game.castling[color].q && board[homeRow][1] === null && board[homeRow][2] === null && board[homeRow][3] === null) {
-        if (board[homeRow][0] === `${color}r`) {
-          addMove(homeRow, 2, "castle");
-        }
+      if (game.castling[color].q && board[homeRow][1] === null && board[homeRow][2] === null && board[homeRow][3] === null && board[homeRow][0] === `${color}r`) {
+        addMove(homeRow, 2, "castle");
       }
     }
   }
@@ -406,25 +446,47 @@ function generatePseudoMovesForPiece(board, row, col, piece) {
 }
 
 function generateLegalMovesForColor(color) {
-  const legalMoves = [];
+  const moves = [];
 
   for (let row = 0; row < BOARD_SIZE; row += 1) {
     for (let col = 0; col < BOARD_SIZE; col += 1) {
       const piece = game.board[row][col];
       if (!piece || piece[0] !== color) continue;
 
-      const candidateMoves = generatePseudoMovesForPiece(game.board, row, col, piece);
-
-      for (const move of candidateMoves) {
+      const pseudoMoves = generatePseudoMovesForPiece(game.board, row, col, piece);
+      for (const move of pseudoMoves) {
         const nextBoard = simulateMove(game.board, move);
         if (!isKingInCheck(nextBoard, color)) {
-          legalMoves.push(move);
+          moves.push(move);
         }
       }
     }
   }
 
-  return legalMoves;
+  return moves;
+}
+
+function updateCastlingRights(move, movingPiece, capturedPiece) {
+  const color = movingPiece[0];
+
+  if (movingPiece[1] === "k") {
+    game.castling[color].k = false;
+    game.castling[color].q = false;
+  }
+
+  if (movingPiece[1] === "r") {
+    if (move.from.row === 7 && move.from.col === 0) game.castling.w.q = false;
+    if (move.from.row === 7 && move.from.col === 7) game.castling.w.k = false;
+    if (move.from.row === 0 && move.from.col === 0) game.castling.b.q = false;
+    if (move.from.row === 0 && move.from.col === 7) game.castling.b.k = false;
+  }
+
+  if (capturedPiece && capturedPiece[1] === "r") {
+    if (move.to.row === 7 && move.to.col === 0) game.castling.w.q = false;
+    if (move.to.row === 7 && move.to.col === 7) game.castling.w.k = false;
+    if (move.to.row === 0 && move.to.col === 0) game.castling.b.q = false;
+    if (move.to.row === 0 && move.to.col === 7) game.castling.b.k = false;
+  }
 }
 
 function renderBoard() {
@@ -432,44 +494,43 @@ function renderBoard() {
 
   for (let row = 0; row < BOARD_SIZE; row += 1) {
     for (let col = 0; col < BOARD_SIZE; col += 1) {
-      const squareButton = document.createElement("button");
-      squareButton.type = "button";
-      squareButton.className = "square";
-      squareButton.dataset.row = String(row);
-      squareButton.dataset.col = String(col);
+      const square = document.createElement("button");
+      square.type = "button";
+      square.className = "square";
+      square.dataset.row = String(row);
+      square.dataset.col = String(col);
 
       const isDark = (row + col) % 2 === 1;
-      squareButton.style.background = isDark ? "var(--wood-dark)" : "var(--wood-light)";
-      squareButton.setAttribute("aria-label", `Square ${row + 1}, ${col + 1}`);
+      square.style.background = isDark ? "var(--board-dark)" : "var(--board-light)";
 
       if (game.selected && game.selected.row === row && game.selected.col === col) {
-        squareButton.classList.add("selected");
+        square.classList.add("selected");
       }
 
       const legalMove = game.legalMoves.find((move) => move.to.row === row && move.to.col === col);
       if (legalMove) {
-        squareButton.classList.add(legalMove.capture || legalMove.special === "enPassant" ? "legal capture" : "legal");
+        square.classList.add(legalMove.capture || legalMove.special === "enPassant" ? "legal capture" : "legal");
       }
 
       const piece = game.board[row][col];
       if (piece) {
-        squareButton.innerHTML = getPieceIconMarkup(piece);
+        square.innerHTML = buildPixelPieceSVG(piece);
       }
 
-      squareButton.addEventListener("click", () => handleSquareClick(row, col));
-      boardElement.appendChild(squareButton);
+      square.addEventListener("click", () => handleSquareClick(row, col));
+      boardElement.appendChild(square);
     }
   }
 }
 
-function updateStatusText() {
+function renderStatus() {
   turnIndicator.textContent = colorName(game.turn);
   statusText.textContent = game.status;
 }
 
 function render() {
   renderBoard();
-  updateStatusText();
+  renderStatus();
 }
 
 function selectPiece(row, col) {
@@ -501,27 +562,22 @@ function applyMove(move) {
     game.enPassant = null;
   }
 
-  const nextTurn = opponent(game.turn);
-  game.turn = nextTurn;
-  game.selected = null;
-  game.legalMoves = [];
-
   if (capturedPiece) {
     playCaptureSound();
   } else {
     playMoveSound();
   }
 
-  const legalMovesForNextTurn = generateLegalMovesForColor(nextTurn);
+  const nextTurn = opponent(game.turn);
+  game.turn = nextTurn;
+  game.selected = null;
+  game.legalMoves = [];
 
+  const legalMovesForNextTurn = generateLegalMovesForColor(nextTurn);
   if (legalMovesForNextTurn.length === 0) {
     const inCheck = isKingInCheck(game.board, nextTurn);
-    game.status = inCheck
-      ? `${colorName(opponent(nextTurn))} wins by checkmate`
-      : "Draw by stalemate";
-    if (inCheck) {
-      playWinSound();
-    }
+    game.status = inCheck ? `${colorName(opponent(nextTurn))} wins by checkmate` : "Draw by stalemate";
+    if (inCheck) playWinSound();
   } else if (isKingInCheck(game.board, nextTurn)) {
     game.status = `${colorName(nextTurn)} is in check`;
     playCheckSound();
@@ -536,12 +592,10 @@ function handleSquareClick(row, col) {
   const piece = game.board[row][col];
 
   if (game.selected) {
-    const selectedMove = game.legalMoves.find(
-      (move) => move.to.row === row && move.to.col === col
-    );
+    const chosenMove = game.legalMoves.find((move) => move.to.row === row && move.to.col === col);
 
-    if (selectedMove) {
-      applyMove(selectedMove);
+    if (chosenMove) {
+      applyMove(chosenMove);
       return;
     }
 
